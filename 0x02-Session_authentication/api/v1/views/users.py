@@ -2,7 +2,8 @@
 """ Module of Users views
 """
 from api.v1.views import app_views
-from flask import abort, jsonify, request
+from api.v1.auth.auth import Auth
+from flask import abort, jsonify, request, g
 from models.user import User
 
 
@@ -18,18 +19,22 @@ def view_all_users() -> str:
 
 @app_views.route('/users/<user_id>', methods=['GET'], strict_slashes=False)
 def view_one_user(user_id: str = None) -> str:
-    """ GET /api/v1/users/:id
+    """GET /api/v1/users/:id
     Path parameter:
-      - User ID
+      - User ID or "me" for the current authenticated user
     Return:
       - User object JSON represented
-      - 404 if the User ID doesn't exist
+      - 404 if the User ID doesn't exist or if "me" and no authenticated user
     """
-    if user_id is None:
-        abort(404)
-    user = User.get(user_id)
-    if user is None:
-        abort(404)
+    if user_id == "me":
+        if not hasattr(g, 'current_user') or g.current_user is None:
+            abort(404)
+        user = g.current_user
+    else:
+        user = User.get(user_id)
+        if user is None:
+            abort(404)
+
     return jsonify(user.to_json())
 
 
@@ -120,3 +125,18 @@ def update_user(user_id: str = None) -> str:
         user.last_name = rj.get('last_name')
     user.save()
     return jsonify(user.to_json()), 200
+
+@app_views.route('/users/me', methods=['GET'], strict_slashes=False)
+def get_current_user() -> str:
+    """
+    GET /api/v1/users/me
+    Return:
+      - The authenticated User object JSON represented
+      - 404 if no authenticated User is found
+    """
+    auth = Auth()
+    user = auth.current_user(request)
+    if user is None:
+        abort(404)
+    return jsonify(user.to_json())
+
