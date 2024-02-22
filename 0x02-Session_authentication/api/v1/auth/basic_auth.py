@@ -71,7 +71,7 @@ class BasicAuth(Auth):
             return
         for u in user:
             if u.is_valid_password(user_pwd):
-                return u
+                return u.to_json()
 
     def current_user(self, request=None) -> TypeVar('User'):
         """ def current_user.

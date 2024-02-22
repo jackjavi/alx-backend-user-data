@@ -34,8 +34,7 @@ def view_one_user(user_id: str = None) -> str:
         user = User.get(user_id)
         if user is None:
             abort(404)
-
-    return jsonify(user.to_json())
+    return jsonify({"user_id": user_id}), 200
 
 
 @app_views.route('/users/<user_id>', methods=['DELETE'], strict_slashes=False)
@@ -134,9 +133,7 @@ def get_current_user() -> str:
       - The authenticated User object JSON represented
       - 404 if no authenticated User is found
     """
-    auth = Auth()
-    user = auth.current_user(request)
-    if user is None:
+    if g.current_user is None:
         abort(404)
-    return jsonify(user.to_json())
+    return jsonify({'names': g.current_user}), 200
 
