@@ -135,5 +135,5 @@ def get_current_user() -> str:
     """
     if g.current_user is None:
         abort(404)
-    return jsonify({'names': g.current_user}), 200
+    return jsonify({'user': g.current_user}), 200
 
