@@ -38,7 +38,6 @@ class Auth:
 
         else:
             raise ValueError(f'User {email} already exists')
-        
 
     def valid_login(self, email: str, password: str) -> bool:
         """Checks if a user's login details are valid.
